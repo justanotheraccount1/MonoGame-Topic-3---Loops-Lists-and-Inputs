@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
@@ -23,6 +24,7 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
         Vector2 mowerSpeed;
 
         List<Rectangle> grassTiles = new List<Rectangle>();
+        float direction, previousDirection;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -39,13 +41,14 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             _graphics.ApplyChanges();
 
             mowerRect = new Rectangle(100, 100, 30, 30);
-            for (int x = 0; x < window.Width; x += 5)
+            for (int x = 0; x < window.Width; x += 2)
             {
-                for (int y = 0; y < window.Height; y += 5)
+                for (int y = 0; y < window.Height; y += 2)
                 {
-                    grassTiles.Add(new Rectangle(x, y, 5, 5));
+                    grassTiles.Add(new Rectangle(x, y, 2, 2));
                 }
             }
+            direction = 0f;
             base.Initialize();
         }
 
@@ -70,18 +73,26 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             if (keyboardState.IsKeyDown(Keys.W))
             {
                 mowerSpeed.Y -= 1;
+                direction = 0.5f;
             }
             if (keyboardState.IsKeyDown(Keys.D))
             {
                 mowerSpeed.X += 1;
+                direction = 1f;
             }
             if (keyboardState.IsKeyDown(Keys.A))
             {
                 mowerSpeed.X -= 1;
+                direction = 0f;
             }
             if (keyboardState.IsKeyDown(Keys.S))
             {
                 mowerSpeed.Y += 1;
+                direction = 1.5f;
+            }
+            if (keyboardState.IsKeyUp(Keys.W) && keyboardState.IsKeyUp(Keys.A) && keyboardState.IsKeyUp(Keys.S) && keyboardState.IsKeyUp(Keys.D))
+            {
+                direction = previousDirection;
             }
             mowerRect.Offset(mowerSpeed);
             if (mowerSpeed == Vector2.Zero)
@@ -116,7 +127,11 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
                     i--;
                 }
             }
-            // TODO: Add your update logic here
+            if (grassTiles.Count <= 0)
+            {
+                Exit();
+            }
+            previousDirection = direction;
 
             base.Update(gameTime);
         }
@@ -130,7 +145,8 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             {
                 _spriteBatch.Draw(grassTexture, grass, Color.White);
             }
-            _spriteBatch.Draw(mowerTexture, mowerRect, Color.White);
+           
+            _spriteBatch.Draw(mowerTexture, new Rectangle(mowerRect.X + mowerRect.Width / 2, mowerRect.Y + mowerRect.Height / 2, mowerRect.Width, mowerRect.Height), null, Color.White, (float)(Math.PI) * (direction), new Vector2(mowerTexture.Width / 2, mowerTexture.Height / 2), SpriteEffects.None, 1f);
             _spriteBatch.End();
 
             // TODO: Add your drawing code here
