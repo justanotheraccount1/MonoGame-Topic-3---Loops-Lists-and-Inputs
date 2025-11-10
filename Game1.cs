@@ -24,7 +24,10 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
         Vector2 mowerSpeed;
 
         List<Rectangle> grassTiles = new List<Rectangle>();
-        float direction, previousDirection;
+        float direction, previousDirection, mowerAngle;
+        bool on = false;
+        bool win = false;
+        SpriteFont winFont;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -60,6 +63,7 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             mowerSound = Content.Load<SoundEffect>("Sounds/mower_sound");
             mowerSoundInstance = mowerSound.CreateInstance();
             mowerSoundInstance.IsLooped = true;
+            winFont = Content.Load<SpriteFont>("Font/WinFont");
             // TODO: use this.Content to load your game content here
         }
         
@@ -70,39 +74,39 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             keyboardState = Keyboard.GetState();
 
             mowerSpeed = Vector2.Zero;
+            if (keyboardState.IsKeyDown(Keys.Enter))
+            {
+                on = true;
+            }
             if (keyboardState.IsKeyDown(Keys.W))
             {
                 mowerSpeed.Y -= 1;
-                direction = 0.5f;
             }
             if (keyboardState.IsKeyDown(Keys.D))
             {
                 mowerSpeed.X += 1;
-                direction = 1f;
             }
             if (keyboardState.IsKeyDown(Keys.A))
             {
                 mowerSpeed.X -= 1;
-                direction = 0f;
             }
             if (keyboardState.IsKeyDown(Keys.S))
             {
                 mowerSpeed.Y += 1;
-                direction = 1.5f;
+            }
+            if (keyboardState.IsKeyDown (Keys.Space))
+            {
+                mowerSpeed.X *= 2;
+                mowerSpeed.Y *= 2;
             }
             if (keyboardState.IsKeyUp(Keys.W) && keyboardState.IsKeyUp(Keys.A) && keyboardState.IsKeyUp(Keys.S) && keyboardState.IsKeyUp(Keys.D))
             {
-                direction = previousDirection;
-            }
-            mowerRect.Offset(mowerSpeed);
-            if (mowerSpeed == Vector2.Zero)
-            {
-                mowerSoundInstance.Stop();
+                mowerAngle = previousDirection;
             }
             else
-            {
-                mowerSoundInstance.Play();
-            }
+                mowerAngle = (float)Math.Atan2(mowerSpeed.Y, mowerSpeed.X);
+            mowerRect.Offset(mowerSpeed);
+
             if (mowerRect.Left <= window.Left)
             {
                 mowerRect.X = 0;
@@ -119,19 +123,37 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             {
                 mowerRect.Y = window.Height - mowerRect.Height;
             }
-            for (int i = 0; i < grassTiles.Count; i++)
+            if (on)
             {
-                if (mowerRect.Contains(grassTiles[i]))
+                mowerSoundInstance.Play();
+                if (mowerSpeed == Vector2.Zero)
                 {
-                    grassTiles.RemoveAt(i);
-                    i--;
+                    mowerSoundInstance.Volume = 0.2f;
+                }
+                else if (keyboardState.IsKeyDown(Keys.Space))
+                {
+                    mowerSoundInstance.Volume = 1f;
+                }
+                else
+                {
+                    mowerSoundInstance.Volume = 0.5f;
+                }
+
+                for (int i = 0; i < grassTiles.Count; i++)
+                {
+                    if (mowerRect.Contains(grassTiles[i]))
+                    {
+                        grassTiles.RemoveAt(i);
+                        i--;
+                    }
                 }
             }
+           
             if (grassTiles.Count <= 0)
             {
-                Exit();
+                win = true;
             }
-            previousDirection = direction;
+            previousDirection = mowerAngle;
 
             base.Update(gameTime);
         }
@@ -145,8 +167,11 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             {
                 _spriteBatch.Draw(grassTexture, grass, Color.White);
             }
-           
-            _spriteBatch.Draw(mowerTexture, new Rectangle(mowerRect.X + mowerRect.Width / 2, mowerRect.Y + mowerRect.Height / 2, mowerRect.Width, mowerRect.Height), null, Color.White, (float)(Math.PI) * (direction), new Vector2(mowerTexture.Width / 2, mowerTexture.Height / 2), SpriteEffects.None, 1f);
+
+            if (win)
+                _spriteBatch.DrawString(winFont, "You Win!", new Vector2(0, 200), Color.Green);
+
+            _spriteBatch.Draw(mowerTexture, new Rectangle(mowerRect.X + mowerRect.Width / 2, mowerRect.Y + mowerRect.Height / 2, mowerRect.Width, mowerRect.Height), null, Color.White, (float)mowerAngle + (float)Math.PI, new Vector2(mowerTexture.Width / 2, mowerTexture.Height / 2), SpriteEffects.None, 1f);
             _spriteBatch.End();
 
             // TODO: Add your drawing code here
