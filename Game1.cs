@@ -169,7 +169,7 @@ namespace MonoGame_Topic_3___Loops_Lists_and_Inputs
             }
 
             if (win)
-                _spriteBatch.DrawString(winFont, "You Win!", new Vector2(0, 200), Color.Green);
+                _spriteBatch.DrawString(winFont, "You Win!", new Vector2(50, 200), Color.Green);
 
             _spriteBatch.Draw(mowerTexture, new Rectangle(mowerRect.X + mowerRect.Width / 2, mowerRect.Y + mowerRect.Height / 2, mowerRect.Width, mowerRect.Height), null, Color.White, (float)mowerAngle + (float)Math.PI, new Vector2(mowerTexture.Width / 2, mowerTexture.Height / 2), SpriteEffects.None, 1f);
             _spriteBatch.End();
